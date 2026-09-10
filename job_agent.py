@@ -24,25 +24,31 @@ from bs4 import BeautifulSoup
 
 # Companies to check for corporate openings. Add/remove freely.
 # "url" should point to the page listing their open roles.
+# NOTE: Many large-company career sites block simple scripts like this one
+# (403 errors) or only render listings via JavaScript (so a plain fetch sees
+# an empty page). Ormat's job search page below was verified to work with a
+# plain fetch. The others are commented out because they didn't work when
+# tested -- if you find a working URL for one (open it in an incognito
+# browser tab and copy the URL of the actual listing page, not the homepage),
+# uncomment and fix the line.
 COMPANIES = [
-    {"name": "Ormat Technologies", "url": "https://www.ormat.com/en/careers/open-positions/"},
-    {"name": "Fervo Energy", "url": "https://fervoenergy.com/careers/"},
-    {"name": "Jacobs", "url": "https://careers.jacobs.com/search/?q=geothermal"},
-    {"name": "Baker Hughes", "url": "https://careers.bakerhughes.com/global/en/search-results?keywords=geothermal"},
-    {"name": "SLB", "url": "https://careers.slb.com/search-jobs?keywords=geothermal"},
-    {"name": "Chevron New Energies", "url": "https://www.chevron.com/careers/search-jobs?keywords=geothermal"},
-    # Sage Geosystems: their applicant-tracking system URL wasn't easy to find
-    # automatically -- the careers page returned marketing copy instead of a
-    # jobs list. Visit https://www.sagegeosystems.com/careers in a browser,
-    # click through to their actual jobs list, and paste that URL below.
-    # {"name": "Sage Geosystems", "url": "PASTE_REAL_JOBS_URL_HERE"},
-    {"name": "Constellation Energy", "url": "https://www.constellationenergy.com/careers/job-search.html?keywords=geothermal"},
+    {"name": "Ormat Technologies", "url": "https://careers.ormat.com/search/"},
+    # {"name": "Fervo Energy", "url": "BLOCKED_403_NEEDS_REAL_URL"},
+    # {"name": "Jacobs", "url": "JS_ONLY_NEEDS_REAL_URL"},
+    # {"name": "Baker Hughes", "url": "JS_ONLY_NEEDS_REAL_URL"},
+    # {"name": "SLB", "url": "BROKEN_URL_NEEDS_FIXING"},
+    # {"name": "Chevron New Energies", "url": "BLOCKED_403_NEEDS_REAL_URL"},
+    # {"name": "Sage Geosystems", "url": "NEEDS_REAL_ATS_URL"},
+    # {"name": "Constellation Energy", "url": "BROKEN_URL_NEEDS_FIXING"},
 ]
 
 # Academic job boards to check for faculty positions.
+# HigherEdJobs runs bot-protection (Incapsula) that blocks plain scripts, so
+# it's commented out here -- use their free "Job Alert" (saved search, emailed
+# to you directly by HigherEdJobs) instead, since that request comes from
+# their own system rather than an outside script and won't be blocked.
 ACADEMIC_SOURCES = [
-    {"name": "HigherEdJobs", "url": "https://www.higheredjobs.com/faculty/search.cfm?Keyword=geothermal"},
-    {"name": "HigherEdJobs (Reservoir/Petroleum)", "url": "https://www.higheredjobs.com/faculty/search.cfm?Keyword=reservoir+engineering"},
+    # {"name": "HigherEdJobs", "url": "BLOCKED_BY_BOT_PROTECTION"},
     # AcademicJobsOnline removed: its /ajo/jobs page is a filter UI (categories),
     # not a list of postings, so it only produced noise. If you find a specific
     # department's AJO page (e.g. academicjobsonline.org/ajo/YourUni/YourDept),
