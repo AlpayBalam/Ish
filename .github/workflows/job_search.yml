@@ -1,0 +1,40 @@
+yaml
+name: Job Search Agent
+
+on:
+  schedule:
+    # Runs at 06:00 UTC every 2 days. Adjust the cron expression if you want
+    # a different time/frequency (crontab.guru is handy for this).
+    - cron: "0 6 */2 * *"
+  workflow_dispatch: {}   # lets you click "Run workflow" manually on GitHub
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run job search agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python job_agent.py
+
+      - name: Commit updated seen-jobs file
+        run: |
+          git config user.name "job-search-agent"
+          git config user.email "actions@github.com"
+          git add seen_jobs.json
+          git diff --quiet --cached || git commit -m "Update seen jobs"
+          git push
