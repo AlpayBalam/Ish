@@ -31,7 +31,11 @@ COMPANIES = [
     {"name": "Baker Hughes", "url": "https://careers.bakerhughes.com/global/en/search-results?keywords=geothermal"},
     {"name": "SLB", "url": "https://careers.slb.com/search-jobs?keywords=geothermal"},
     {"name": "Chevron New Energies", "url": "https://www.chevron.com/careers/search-jobs?keywords=geothermal"},
-    {"name": "Sage Geosystems", "url": "https://www.sagegeosystems.com/careers"},
+    # Sage Geosystems: their applicant-tracking system URL wasn't easy to find
+    # automatically -- the careers page returned marketing copy instead of a
+    # jobs list. Visit https://www.sagegeosystems.com/careers in a browser,
+    # click through to their actual jobs list, and paste that URL below.
+    # {"name": "Sage Geosystems", "url": "PASTE_REAL_JOBS_URL_HERE"},
     {"name": "Constellation Energy", "url": "https://www.constellationenergy.com/careers/job-search.html?keywords=geothermal"},
 ]
 
@@ -39,7 +43,10 @@ COMPANIES = [
 ACADEMIC_SOURCES = [
     {"name": "HigherEdJobs", "url": "https://www.higheredjobs.com/faculty/search.cfm?Keyword=geothermal"},
     {"name": "HigherEdJobs (Reservoir/Petroleum)", "url": "https://www.higheredjobs.com/faculty/search.cfm?Keyword=reservoir+engineering"},
-    {"name": "AcademicJobsOnline", "url": "https://academicjobsonline.org/ajo/jobs"},
+    # AcademicJobsOnline removed: its /ajo/jobs page is a filter UI (categories),
+    # not a list of postings, so it only produced noise. If you find a specific
+    # department's AJO page (e.g. academicjobsonline.org/ajo/YourUni/YourDept),
+    # add it here instead -- those pages DO list real postings.
 ]
 
 # Keywords that define a match (case-insensitive, partial match).
@@ -93,6 +100,10 @@ def extract_matches(source_name: str, url: str, page_text: str) -> list:
             continue
         lower = line.lower()
         if line in seen_lines:
+            continue
+        if " " not in line.strip():
+            # Skip run-together tokens like "ASSISTANTPROFESSOR1" -- these are
+            # almost always filter-UI labels, not real job titles.
             continue
         for kw in JOB_KEYWORDS:
             if kw in lower:
