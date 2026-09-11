@@ -50,6 +50,15 @@ ADZUNA_RESULTS_PER_QUERY = 20
 # and avoids re-surfacing very old listings on first run).
 ADZUNA_MAX_DAYS_OLD = 10
 
+# Words that, if present, mean the posting is almost certainly noise for you
+# (residential/HVAC "geothermal heat pump installer" jobs, hospitality jobs
+# near geothermal spas, etc. -- these share the keyword but aren't your kind
+# of role). Adzuna excludes any posting containing any of these words.
+ADZUNA_EXCLUDE_WORDS = (
+    "hvac installer technician residential plumbing plumber "
+    "cook chef banquet massage spa therapist naturalist hospitality"
+)
+
 # A few specific company career pages, verified to work with a plain script
 # fetch (no JavaScript rendering, no bot-blocking). This is a supplement to
 # the broad Adzuna search above, not the main mechanism -- add more here only
@@ -139,6 +148,7 @@ def search_adzuna(query: str) -> list:
         "app_id": app_id,
         "app_key": app_key,
         "what": query,
+        "what_exclude": ADZUNA_EXCLUDE_WORDS,
         "results_per_page": ADZUNA_RESULTS_PER_QUERY,
         "max_days_old": ADZUNA_MAX_DAYS_OLD,
         "sort_by": "date",
