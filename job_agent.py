@@ -135,6 +135,21 @@ MAX_LINE_LEN = 140
 # ---------------------------------------------------------------------------
 
 
+def title_is_relevant(title: str) -> bool:
+    """True if a job title itself (not just the description) contains one
+    of your keywords. Short acronyms (EGS, CCS, etc.) require whole-word
+    matches to avoid matching inside unrelated words."""
+    lower = title.lower()
+    for kw in JOB_KEYWORDS:
+        kw_lower = kw.lower()
+        if len(kw) <= SHORT_KEYWORD_MAX_LEN:
+            if re.search(rf"\b{re.escape(kw_lower)}\b", lower):
+                return True
+        elif kw_lower in lower:
+            return True
+    return False
+
+
 def search_adzuna(query: str) -> list:
     """Query the Adzuna API for one keyword phrase. Returns a list of jobs."""
     app_id = os.environ.get("ADZUNA_APP_ID")
@@ -164,8 +179,17 @@ def search_adzuna(query: str) -> list:
 
     jobs = []
     for item in data.get("results", []):
+        title = item.get("title", "").strip()
+        # Adzuna's "what" searches the full description, so a company's
+        # generic boilerplate (e.g. "we also work in geothermal, nuclear,
+        # solar...") can pull in unrelated postings. To guarantee relevance,
+        # only keep results whose TITLE itself contains one of our keywords
+        # -- verified in Python, not dependent on an API parameter's exact
+        # behavior.
+        if not title_is_relevant(title):
+            continue
         jobs.append({
-            "title": item.get("title", "").strip(),
+            "title": title,
             "company": (item.get("company") or {}).get("display_name", "Unknown"),
             "location": (item.get("location") or {}).get("display_name", ""),
             "url": item.get("redirect_url", ""),
