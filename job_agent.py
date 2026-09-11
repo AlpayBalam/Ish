@@ -55,12 +55,82 @@ ACADEMIC_SOURCES = [
     # add it here instead -- those pages DO list real postings.
 ]
 
-# Keywords that define a match (case-insensitive, partial match).
+# Keywords that define a match (case-insensitive). Multi-word phrases match
+# as substrings; single words match whole-word only (see extract_matches).
 JOB_KEYWORDS = [
+    # Core
     "geothermal", "reservoir engineer", "reservoir engineering",
     "power plant design", "power plant optimization", "integrated geothermal",
     "associate professor", "professor", "assistant professor",
+    "senior scientist",
+    # Reservoir simulation / modeling / forecasting
+    "reservoir simulation", "reservoir modeling", "reservoir modelling",
+    "production forecasting", "production prediction", "history matching",
+    "wellbore analysis", "well testing",
+    # Thermodynamics / exergy
+    "exergy analysis", "exergy", "thermodynamic analysis", "thermo-economic",
+    # Advanced / next-gen geothermal
+    "superhot geothermal", "supercritical geothermal",
+    "enhanced geothermal systems", "EGS",
+    # Energy storage / adjacent subsurface energy
+    "geological energy storage", "compressed air energy storage", "CAES",
+    "subsurface energy",
+    # Power cycle optimization
+    "flash cycle", "binary geothermal", "organic rankine cycle", "ORC",
+    "ground source heat pump", "ground-source heat pump",
+    "combined-cycle", "combined cycle", "district heating",
+    "cascade utilization",
+    # Economic / lifecycle analysis
+    "techno-economic", "life cycle assessment", "LCOE", "LCA",
+    # Well/field development planning
+    "make-up well", "well placement",
+    # Resource assessment / exploration / field implementation
+    "resource assessment", "geothermal exploration", "feasibility studies",
+    "reservoir characterization", "environmental impact assessment", "EIA",
+    "drilling operations", "field implementation",
+    # From all industry CV variants (Hexagon, XGS, Jacobs, Ormat, Zanskar) --
+    # every distinct skill-list phrase across all versions, not just the
+    # ones that seemed novel.
+    "geothermal project development", "geothermal power systems",
+    "production optimization", "injection optimization",
+    "numerical modeling", "numerical modelling",
+    "contractor management", "consultant management",
+    "stakeholder engagement", "strategic partnerships",
+    "cross-functional leadership", "international collaboration",
+    "technology deployment", "energy transition", "program leadership",
+    "government-industry engagement", "data-driven geothermal workflows",
+    "multi-well planning", "field optimization", "heat extraction",
+    "conceptual modeling", "conceptual modelling",
+    "integrated energy systems", "machine learning",
+    "reservoir forecasting", "advanced geothermal systems",
+    "subsurface energy leader", "geothermal systems",
+    # From academic CVs, cover letters, and research statements (Penn State,
+    # Nevada/GBCGE, Texas STARR applications) -- every distinct
+    # skill/expertise phrase found, not just ones judged novel.
+    "subsurface energy storage", "underground energy storage",
+    "geological thermal energy storage", "GTES",
+    "carbon capture and storage", "CCS",
+    "carbon capture, utilization, and storage", "CCUS",
+    "CO2 storage", "carbon dioxide storage",
+    "caprock integrity", "geomechanics", "geomechanical",
+    "THMC coupling", "fracture permeability", "fracture mechanics",
+    "heat flow modeling", "heat-flow modelling", "high-enthalpy",
+    "wellbore stability", "wellbore design", "reactive flow modeling",
+    "stimulation", "permeability modeling", "permeability evolution",
+    "digital twin", "digital twins",
+    "repurposing oil and gas wells", "abandoned oil and gas wells",
+    "hydrogen storage", "subsurface hydrogen",
+    "geohazards", "induced seismicity", "land subsidence",
+    "remote sensing", "geospatial modeling",
+    "aquifer", "groundwater",
+    "critical minerals", "geothermal brines", "produced waters",
+    "AI-driven", "AI-enabled", "multiphase flow",
+    "geothermal reservoir modeling and management",
 ]
+
+# Keywords under this length are treated as whole-word-only matches (to avoid
+# short acronyms like "EGS" or "ORC" matching inside unrelated words).
+SHORT_KEYWORD_MAX_LEN = 5
 
 SEEN_FILE = "seen_jobs.json"
 MAX_PAGE_CHARS = 20000
@@ -112,7 +182,16 @@ def extract_matches(source_name: str, url: str, page_text: str) -> list:
             # almost always filter-UI labels, not real job titles.
             continue
         for kw in JOB_KEYWORDS:
-            if kw in lower:
+            kw_lower = kw.lower()
+            if len(kw) <= SHORT_KEYWORD_MAX_LEN:
+                # Whole-word match only, e.g. "EGS" but not "leGSlation".
+                if re.search(rf"\b{re.escape(kw_lower)}\b", lower):
+                    found = True
+                else:
+                    found = False
+            else:
+                found = kw_lower in lower
+            if found:
                 matches.append({
                     "title": line,
                     "matched_keyword": kw,
